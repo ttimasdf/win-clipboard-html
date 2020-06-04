@@ -67,9 +67,6 @@ fn copy_html(mut stream: Input) -> std::io::Result<()> {
     let format_id = register_format("text/html")?;
     clip.set(format_id, buffer.as_bytes())?;
 
-    let re = Regex::new(r"<(/?)(html|head|body)[^>]*>").unwrap();
-    let html_buffer = re.replace_all(buffer.as_str(), "");
-    // println!("buffer: {}, buflen: {}", html_buffer, html_buffer.len());
     let html_formatted = format!(
         "Version:0.9\r\n\
         StartHTML:{:08}\r\n\
@@ -80,10 +77,10 @@ fn copy_html(mut stream: Input) -> std::io::Result<()> {
         <!--StartFragment-->{}<!--EndFragment-->\r\n\
         </body></html>",
         97,
-        131 + html_buffer.len() + 34,
+        131 + buffer.len() + 34,
         131,
-        131 + html_buffer.len(),
-        html_buffer
+        131 + buffer.len(),
+        buffer
     );
 
     let format_id_html = register_format("HTML Format")?;
