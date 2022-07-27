@@ -7,7 +7,6 @@ use clipboard_win::get_clipboard_string;
 use clipboard_win::raw::register_format;
 use clipboard_win::set_clipboard_string;
 use clipboard_win::Clipboard;
-use regex::Regex;
 
 use std::fs;
 use std::io::BufRead;
@@ -91,7 +90,12 @@ fn copy_html(mut stream: Input) -> std::io::Result<()> {
 }
 
 fn paste_html<W: Write>(mut stream: W) -> std::io::Result<()> {
-    stream.write(&(get_clipboard_string()?).into_bytes())?;
+    let mut buffer = [0u8; 500];
+    let clip = Clipboard::new()?;
+    let format_id = register_format("HTML Format")?;
+    clip.get(format_id, &mut buffer)?;
+
+    stream.write(&buffer)?;
     Ok(())
 }
 
@@ -164,7 +168,7 @@ fn main() {
         // copy html
         (true, true) => copy_html(input).expect("Error: Could not copy to clipboard"),
         // paste html
-        (false, true) => unimplemented!("Not yet available"),
+        (false, true) => paste_html(io::stdout()).expect("Error: Could not paste from clipboard"),
     }
     if args.is_present("delete") {
         println!("Deleting file after copied");
